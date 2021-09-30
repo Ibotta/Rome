@@ -43,7 +43,7 @@ end
 
 def xcodebuild(sandbox, target, sdk='macosx', deployment_target=nil, flags=nil, configuration)
   args = %W(-project #{sandbox.project_path.realdirpath} -scheme #{target} -configuration #{configuration} -sdk #{sdk})
-  args += flags unless flags.nil?  
+  args += flags unless flags.nil?
   platform = PLATFORMS[sdk]
   args += Fourflusher::SimControl.new.destination(:oldest, platform, deployment_target) unless platform.nil?
   Pod::Executable.execute_command 'xcodebuild', args, true
@@ -57,7 +57,7 @@ def build_universal_framework(device_lib, simulator_lib, build_dir, destination,
 
   device_framework_lib = File.dirname(device_executable)
   lipo_log = `lipo -create -output #{destination} #{device_executable} #{simulator_executable}`
-  puts lipo_log unless File.exist?(destination) 
+  puts lipo_log unless File.exist?(destination)
 
   FileUtils.mv destination, device_executable, :force => true
   FileUtils.mv device_framework_lib, build_dir, :force => true
@@ -65,12 +65,12 @@ end
 
 def build_xcframework(frameworks, build_dir, module_name)
   output = "#{build_dir}/#{module_name}.xcframework"
-  return if File.exist?(output) 
+  return if File.exist?(output)
 
   args = %W(-create-xcframework -output #{output})
 
   frameworks.each do |framework|
-    return unless File.exist?(framework) 
+    return unless File.exist?(framework)
     args += %W(-framework #{framework})
   end
 
@@ -105,15 +105,15 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
   configuration = user_options.fetch('configuration', 'Debug')
   build_xcframework = user_options.fetch('xcframework', false)
 
-  flags = [] 
-  
+  flags = []
+
   # Setting SKIP_INSTALL=NO to access the built frameworks inside the archive created
   # instead of searching in Xcode’s default derived data folder
   flags << "SKIP_INSTALL=NO" if build_xcframework
 
   # Use custom flags passed via user options, if any
   flags += user_options["flags"] if user_options["flags"]
-  
+
   if user_options["pre_compile"]
     user_options["pre_compile"].call(installer_context)
   end
@@ -129,6 +129,7 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
   Pod::UI.puts 'Building frameworks'
 
   build_dir.rmtree if build_dir.directory?
+
   targets = installer_context.umbrella_targets.select { |t| t.specs.any? }
   targets.each do |target|
     case target.platform_name
