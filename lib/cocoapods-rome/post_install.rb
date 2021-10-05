@@ -74,6 +74,8 @@ def build_xcframework(frameworks, build_dir, module_name)
     args += %W(-framework #{framework})
   end
 
+  puts "Building XCFramework for: #{module_name}"
+
   Pod::Executable.execute_command 'xcodebuild', args, true
 end
 
