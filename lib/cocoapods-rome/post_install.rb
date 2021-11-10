@@ -105,7 +105,7 @@ end
 Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_context, user_options|
   enable_dsym = user_options.fetch('dsym', true)
   configuration = user_options.fetch('configuration', 'Debug')
-  build_xcframework = user_options.fetch('xcframework', false)
+  build_xcframework = user_options.fetch('xcframework', true)
 
   flags = []
 
