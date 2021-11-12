@@ -90,15 +90,28 @@ def enable_debug_information(project_path, configuration)
   project.save
 end
 
-def copy_dsym_files(dsym_destination, configuration)
-  dsym_destination.rmtree if dsym_destination.directory?
-  platforms = ['iphoneos', 'iphonesimulator']
+def copy_dsym_files(destination, configuration)
+  platforms = ['iphoneos']
   platforms.each do |platform|
     dsym = Pathname.glob("build/#{configuration}-#{platform}/**/*.dSYM")
     dsym.each do |dsym|
-      destination = dsym_destination + platform
-      FileUtils.mkdir_p destination
-      FileUtils.cp_r dsym, destination, :remove_destination => true
+      dsym_basename = File.basename(dsym, '.framework.dSYM')
+      xcframework_path = File.join(destination, "#{dsym_basename}.xcframework")
+
+      next unless Dir.exist?(xcframework_path)
+
+      Dir.children(xcframework_path).each do |child|
+        next unless File.directory? File.join(xcframework_path, child)
+        next unless child.include? 'ios-arm64'
+        next if child.include? '-simulator'
+        next if child.include? '-maccatalyst'
+
+        dsym_destination = File.join(xcframework_path, child, 'dSYMs')
+        puts "Copying dsym to #{dsym_destination}"
+
+        FileUtils.cp_r dsym, dsym_destination, remove_destination: true
+      end
+
     end
   end
 end
@@ -176,7 +189,7 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
     FileUtils.cp_r file, destination, :remove_destination => true
   end
 
-  copy_dsym_files(sandbox_root.parent + 'dSYM', configuration) if enable_dsym
+  copy_dsym_files(destination, configuration) if enable_dsym
 
   build_dir.rmtree if build_dir.directory?
 
