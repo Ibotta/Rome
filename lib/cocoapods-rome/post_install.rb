@@ -71,6 +71,7 @@ def build_xcframework(frameworks, build_dir, module_name)
 
   frameworks.each do |framework|
     return unless File.exist?(framework)
+
     args += %W(-framework #{framework})
   end
 
@@ -111,13 +112,13 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
 
   # Setting SKIP_INSTALL=NO to access the built frameworks inside the archive created
   # instead of searching in Xcode’s default derived data folder
-  flags << "SKIP_INSTALL=NO" if build_xcframework
+  flags << 'SKIP_INSTALL=NO' if build_xcframework
 
   # Use custom flags passed via user options, if any
-  flags += user_options["flags"] if user_options["flags"]
+  flags += user_options['flags'] if user_options['flags']
 
-  if user_options["pre_compile"]
-    user_options["pre_compile"].call(installer_context)
+  if user_options['pre_compile']
+    user_options['pre_compile'].call(installer_context)
   end
 
   sandbox_root = Pathname(installer_context.sandbox_root)
@@ -146,7 +147,7 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
 
   # Make sure the device target overwrites anything in the simulator build, otherwise iTunesConnect
   # can get upset about Info.plist containing references to the simulator SDK
-  build_type = build_xcframework ? "xcframework" : "framework"
+  build_type = build_xcframework ? 'xcframework' : 'framework'
   frameworks = Pathname.glob("build/*/*/*.#{build_type}").reject { |f| f.to_s =~ /Pods[^.]+\.#{build_type}/ }
   frameworks += Pathname.glob("build/*.#{build_type}").reject { |f| f.to_s =~ /Pods[^.]+\.#{build_type}/ }
 
@@ -168,8 +169,7 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
   frameworks.uniq!
   resources.uniq!
 
-  Pod::UI.puts "Copying #{frameworks.count} #{'frameworks'.pluralize(frameworks.count)} " \
-    "to `#{destination.relative_path_from Pathname.pwd}`"
+  Pod::UI.puts "Copying #{frameworks.count} #{'frameworks'.pluralize(frameworks.count)} to `#{destination.relative_path_from Pathname.pwd}`"
 
   FileUtils.mkdir_p destination
   (frameworks + resources).each do |file|
@@ -180,7 +180,7 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
 
   build_dir.rmtree if build_dir.directory?
 
-  if user_options["post_compile"]
-    user_options["post_compile"].call(installer_context)
+  if user_options['post_compile']
+    user_options['post_compile'].call(installer_context)
   end
 end
