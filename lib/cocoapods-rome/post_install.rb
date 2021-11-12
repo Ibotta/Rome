@@ -4,7 +4,7 @@ PLATFORMS = { 'iphonesimulator' => 'iOS',
               'appletvsimulator' => 'tvOS',
               'watchsimulator' => 'watchOS' }
 
-def build_for_iosish_platform(sandbox, build_dir, target, device, simulator, flags, configuration, build_xcframework=false)
+def build_for_iosish_platform(sandbox, build_dir, target, device, simulator, flags, configuration, build_xcframework = false)
   deployment_target = target.platform_deployment_target
   target_label = target.cocoapods_target_label
 
@@ -28,7 +28,7 @@ def build_for_iosish_platform(sandbox, build_dir, target, device, simulator, fla
   end
 end
 
-def build_for_macos_platform(sandbox, build_dir, target, flags, configuration, build_xcframework=false)
+def build_for_macos_platform(sandbox, build_dir, target, flags, configuration, build_xcframework = false)
   target_label = target.cocoapods_target_label
   xcodebuild(sandbox, target_label, flags, configuration)
 
@@ -41,8 +41,8 @@ def build_for_macos_platform(sandbox, build_dir, target, flags, configuration, b
   end
 end
 
-def xcodebuild(sandbox, target, sdk='macosx', deployment_target=nil, flags=nil, configuration)
-  args = %W(-project #{sandbox.project_path.realdirpath} -scheme #{target} -configuration #{configuration} -sdk #{sdk})
+def xcodebuild(sandbox, target, sdk = 'macosx', deployment_target = nil, flags = nil, configuration)
+  args = %W[-project #{sandbox.project_path.realdirpath} -scheme #{target} -configuration #{configuration} -sdk #{sdk}]
   args += flags unless flags.nil?
   platform = PLATFORMS[sdk]
   args += Fourflusher::SimControl.new.destination(:oldest, platform, deployment_target) unless platform.nil?
@@ -53,26 +53,29 @@ def build_universal_framework(device_lib, simulator_lib, build_dir, destination,
   device_executable = "#{device_lib}/#{module_name}"
   simulator_executable = "#{simulator_lib}/#{module_name}"
 
-  raise Pod::Informative, 'Framework executables were not found in the expected location.' unless File.file?(device_executable) && File.file?(simulator_executable)
+  unless File.file?(device_executable) && File.file?(simulator_executable)
+    raise Pod::Informative,
+          'Framework executables were not found in the expected location.'
+  end
 
   device_framework_lib = File.dirname(device_executable)
   lipo_log = `lipo -create -output #{destination} #{device_executable} #{simulator_executable}`
   puts lipo_log unless File.exist?(destination)
 
-  FileUtils.mv destination, device_executable, :force => true
-  FileUtils.mv device_framework_lib, build_dir, :force => true
+  FileUtils.mv destination, device_executable, force: true
+  FileUtils.mv device_framework_lib, build_dir, force: true
 end
 
 def build_xcframework(frameworks, build_dir, module_name)
   output = "#{build_dir}/#{module_name}.xcframework"
   return if File.exist?(output)
 
-  args = %W(-create-xcframework -output #{output})
+  args = %W[-create-xcframework -output #{output}]
 
   frameworks.each do |framework|
     return unless File.exist?(framework)
 
-    args += %W(-framework #{framework})
+    args += %W[-framework #{framework}]
   end
 
   puts "Building XCFramework for: #{module_name}"
@@ -111,7 +114,6 @@ def copy_dsym_files(destination, configuration)
 
         FileUtils.cp_r dsym, dsym_destination, remove_destination: true
       end
-
     end
   end
 end
@@ -186,7 +188,7 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
 
   FileUtils.mkdir_p destination
   (frameworks + resources).each do |file|
-    FileUtils.cp_r file, destination, :remove_destination => true
+    FileUtils.cp_r file, destination, remove_destination: true
   end
 
   copy_dsym_files(destination, configuration) if enable_dsym
