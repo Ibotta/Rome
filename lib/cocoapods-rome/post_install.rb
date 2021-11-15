@@ -78,7 +78,7 @@ def build_xcframework(frameworks, build_dir, module_name)
     args += %W[-framework #{framework}]
   end
 
-  puts "Building XCFramework for: #{module_name}"
+  puts "Building XCFramework for #{module_name}"
 
   Pod::Executable.execute_command 'xcodebuild', args, true
 end
@@ -94,6 +94,8 @@ def enable_debug_information(project_path, configuration)
 end
 
 def copy_dsym_files(destination, configuration)
+  puts 'Copying dSYMs to XCFrameworks'
+
   platforms = ['iphoneos']
   platforms.each do |platform|
     dsym = Pathname.glob("build/#{configuration}-#{platform}/**/*.dSYM")
@@ -109,9 +111,9 @@ def copy_dsym_files(destination, configuration)
         next if child.include? '-simulator'
         next if child.include? '-maccatalyst'
 
-        dsym_destination = File.join(xcframework_path, child, 'dSYMs')
-        puts "Copying dsym to #{dsym_destination}"
+        dsym_destination = File.join(xcframework_path, child, 'dSYMs', File.basename(dsym))
 
+        FileUtils.mkdir_p(File.dirname(dsym_destination))
         FileUtils.cp_r dsym, dsym_destination, remove_destination: true
       end
     end
