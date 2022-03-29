@@ -98,21 +98,20 @@ def copy_dsym_files(destination, configuration)
 
     platforms = ['iphoneos']
     platforms.each do |platform|
-        dsym_path = Pathname.glob("build/#{configuration}-#{platform}/**/*.dSYM")
-        dsym_path.each do |dsym|
+        dsym_paths = Pathname.glob("build/#{configuration}-#{platform}/**/*.dSYM")
+        dsym_paths.each do |dsym|
             dsym_basename = File.basename(dsym, '.framework.dSYM')
             xcframework_path = File.join(destination, "#{dsym_basename}.xcframework")
 
             next unless Dir.exist?(xcframework_path)
 
-            Dir.children(xcframework_path).each do |child|
-                next unless File.directory? File.join(xcframework_path, child)
-                next unless child.include? 'ios-arm64'
-                next if child.include? '-simulator'
-                next if child.include? '-maccatalyst'
+            Dir.children(xcframework_path).each do |sub_directory|
+                next unless File.directory? File.join(xcframework_path, sub_directory)
+                next unless sub_directory.include? 'ios-arm64'
+                next if sub_directory.include? '-simulator'
+                next if sub_directory.include? '-maccatalyst'
 
-                dsym_destination = File.join(xcframework_path, child, 'dSYMs', File.basename(dsym))
-
+                dsym_destination = File.join(xcframework_path, sub_directory, 'dSYMs', File.basename(dsym))
                 FileUtils.mkdir_p(File.dirname(dsym_destination))
                 FileUtils.cp_r dsym, dsym_destination, remove_destination: true
             end
