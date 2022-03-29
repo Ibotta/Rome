@@ -13,4 +13,16 @@ Layout/IndentationWidth:
   Width: 4
 
 Layout/LineLength:
-  Max: 391
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
