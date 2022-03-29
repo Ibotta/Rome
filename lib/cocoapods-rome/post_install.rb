@@ -86,7 +86,7 @@ end
 def enable_debug_information(project_path, configuration)
     project = Xcodeproj::Project.open(project_path)
     project.targets.each do |target|
-        config = target.build_configurations.find { |config| config.name.eql? configuration }
+        config = target.build_configurations.find { |subconfig| subconfig.name.eql? configuration }
         config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
         config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
     end
@@ -98,8 +98,8 @@ def copy_dsym_files(destination, configuration)
 
     platforms = ['iphoneos']
     platforms.each do |platform|
-        dsym = Pathname.glob("build/#{configuration}-#{platform}/**/*.dSYM")
-        dsym.each do |dsym|
+        dsym_path = Pathname.glob("build/#{configuration}-#{platform}/**/*.dSYM")
+        dsym_path.each do |dsym|
             dsym_basename = File.basename(dsym, '.framework.dSYM')
             xcframework_path = File.join(destination, "#{dsym_basename}.xcframework")
 
@@ -134,9 +134,7 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
     # Use custom flags passed via user options, if any
     flags += user_options['flags'] if user_options['flags']
 
-    if user_options['pre_compile']
-        user_options['pre_compile'].call(installer_context)
-    end
+    user_options['pre_compile']&.call(installer_context)
 
     sandbox_root = Pathname(installer_context.sandbox_root)
     sandbox = installer_context.sandbox
@@ -197,7 +195,5 @@ Pod::HooksManager.register('cocoapods-rome', :post_install) do |installer_contex
 
     build_dir.rmtree if build_dir.directory?
 
-    if user_options['post_compile']
-        user_options['post_compile'].call(installer_context)
-    end
+    user_options['post_compile']&.call(installer_context)
 end
