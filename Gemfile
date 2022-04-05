@@ -5,5 +5,6 @@ gemspec
 
 group :development do
   gem 'bacon'
+  gem 'rubocop', require: false
 end
 
